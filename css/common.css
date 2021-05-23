@@ -1,3 +1,11 @@
 .hide{
 	display: none;
 }
+
+.warningText{
+	color: red;
+}
+
+.safeText{
+	display: green;
+}

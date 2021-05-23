@@ -9,15 +9,26 @@
 
 	<script src="./js/jquery-3.5.1.min.js"></script>
 </head>
+
 <body>
 <div class="container-fluid">
 
 
 <p>請將從Line Bot Designer拿到的JSON貼上:</p>
-<textarea id="jsonData" rows="30" cols="60"></textarea>
+<textarea id="jsonData" rows="30" cols="65"></textarea>
+
+<div>
+<label>選擇發送訊息類型:</label>
+<label><input type="radio" name="messageType" value="textMessage" checked>一般文字訊息</label>
+<label><input type="radio" name="messageType" value="flexMessage" >彈性樣式訊息</label>
+</div>
+
 <button onclick="pushLineMessage()">送出訊息</button>
-<p class="hide successMessage">訊息送出成功!</p>
-<p class="hide failMessage">訊息送出失敗!</p>
+
+<div>
+<p class="hide successMessage warningText">訊息送出成功!</p>
+<p class="hide failMessage safeText">訊息送出失敗!</p>
+</div>
 
 
 </div>
@@ -25,11 +36,21 @@
 
 
 function pushLineMessage() {
-	var requestURL = "http://localhost:8080/pushMessageToAllByJson";
+	requestURL = "http://localhost:8080/pushMessageToAllByJson";
 	var dataJSON = $("#jsonData").val().trim();
 
 	var jsonBasic = '{"to":"%%to%%","messages":[ %%messages%%]}';
-	dataJSON = jsonBasic.replace('%%messages%%' , dataJSON);
+	var jsonBasicFlex = '{"to": "%%to%%","messages": [{"type": "flex","altText": "快檢視您收到的最新情報吧!","contents": %%messages%%}]}';
+
+	var messageType =  $("input[type='radio'][name='messageType']:checked").val();
+	if (messageType =='textMessage') {
+		dataJSON = jsonBasic.replace('%%messages%%' , dataJSON);
+	}else if (messageType =='flexMessage') {
+		dataJSON = jsonBasicFlex.replace('%%messages%%' , dataJSON);
+	}else{
+		alert('發送訊息類型錯誤!');
+	}
+
 
 $.ajax({
     url: requestURL,
@@ -41,7 +62,10 @@ $.ajax({
         console.log(returnData);
         if (returnData =='success') {
         	$('.successMessage').show();
-
+        	$('.failMessage').hide();
+        }else{
+        	$('.failMessage').show();
+        	$('.successMessage').hide();
         }
     },
     error: function(xhr, ajaxOptions, thrownError){
